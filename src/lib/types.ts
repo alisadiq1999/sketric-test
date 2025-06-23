@@ -1,4 +1,3 @@
-
 // Sketric Chat Widget Types
 export interface SketricChatMessage {
   id: string;
@@ -106,3 +105,118 @@ export type SketricChatAction =
   | { type: 'CUSTOM_ACTION'; payload: CustomActionEventData }
   | { type: 'RUN_FINISHED' }
   | { type: 'STREAM_ERROR'; payload: { message: string } };
+
+// Agent Workflow Types
+export interface AgentTool {
+  id: string;
+  name: string;
+  description: string;
+  type: 'function' | 'api' | 'database' | 'file' | 'custom';
+  parameters: {
+    name: string;
+    type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+    description: string;
+    required: boolean;
+    defaultValue?: any;
+  }[];
+  implementation?: string; // Python function code
+}
+
+export interface AgentHandoff {
+  id: string;
+  targetAgentId: string;
+  condition?: string;
+  message?: string;
+  preserveContext: boolean;
+}
+
+export interface StructuredOutput {
+  id: string;
+  name: string;
+  schema: {
+    type: 'object' | 'array' | 'string' | 'number' | 'boolean';
+    properties?: Record<string, any>;
+    items?: any;
+    required?: string[];
+  };
+  description?: string;
+}
+
+export interface AgentGuardrail {
+  id: string;
+  name: string;
+  type: 'input_validation' | 'output_filter' | 'safety_check' | 'custom';
+  condition: string;
+  action: 'block' | 'warn' | 'modify';
+  message?: string;
+}
+
+export interface WorkflowAgent {
+  id: string;
+  name: string;
+  instructions: string;
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  tools: AgentTool[];
+  handoffs: AgentHandoff[];
+  structuredOutputs: StructuredOutput[];
+  guardrails: AgentGuardrail[];
+  position: { x: number; y: number };
+  isEntryPoint: boolean;
+}
+
+export interface WorkflowConnection {
+  id: string;
+  source: string;
+  target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
+  type: 'handoff' | 'data_flow';
+  condition?: string;
+}
+
+export interface AgentWorkflow {
+  id: string;
+  name: string;
+  description: string;
+  version: string;
+  agents: WorkflowAgent[];
+  connections: WorkflowConnection[];
+  globalSettings: {
+    defaultModel: string;
+    defaultTemperature: number;
+    maxRetries: number;
+    timeoutSeconds: number;
+    enableTracing: boolean;
+  };
+  metadata: {
+    createdAt: string;
+    updatedAt: string;
+    author: string;
+    tags: string[];
+  };
+}
+
+// React Flow Node Types
+export interface AgentNodeData {
+  agent: WorkflowAgent;
+  isSelected: boolean;
+  onUpdate: (updates: Partial<WorkflowAgent>) => void;
+  onDelete: () => void;
+}
+
+export interface ToolNodeData {
+  tool: AgentTool;
+  onUpdate: (updates: Partial<AgentTool>) => void;
+  onDelete: () => void;
+}
+
+// Canvas State
+export interface CanvasState {
+  workflow: AgentWorkflow;
+  selectedNodeId: string | null;
+  isExecuting: boolean;
+  executionResults: any[];
+  errors: string[];
+}
