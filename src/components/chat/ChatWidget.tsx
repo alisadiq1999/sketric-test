@@ -15,9 +15,16 @@ import { Button } from '@/components/ui/button';
 interface ChatWidgetProps {
   fullScreen?: boolean;
   className?: string;
+  onExecuteWorkflow?: (input: string) => void;
+  workflowEnabled?: boolean;
 }
 
-export function ChatWidget({ fullScreen = false, className }: ChatWidgetProps) {
+export function ChatWidget({ 
+  fullScreen = false, 
+  className, 
+  onExecuteWorkflow,
+  workflowEnabled = false 
+}: ChatWidgetProps) {
   const { messages, isStreaming, sendMessage, isWidgetOpen, toggleWidget } = useChat();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -48,9 +55,11 @@ export function ChatWidget({ fullScreen = false, className }: ChatWidgetProps) {
     >
       <header className="flex items-center justify-between p-4 border-b bg-card">
         <div className="flex items-center">
-          <Bot className="h-7 w-7 text-primary mr-3" />
+          <div className="h-7 w-7 bg-primary rounded-full flex items-center justify-center mr-3">
+            <Bot className="h-4 w-4 text-white" />
+          </div>
           <h2 id="sketric-chat-widget-title" className="text-xl font-headline font-semibold text-foreground">
-            Sketric Assistant
+            {workflowEnabled ? 'Max' : 'Sketric Assistant'}
           </h2>
         </div>
         {!fullScreen && (
@@ -63,6 +72,17 @@ export function ChatWidget({ fullScreen = false, className }: ChatWidgetProps) {
 
       <ScrollArea className="flex-grow" ref={scrollAreaRef}>
         <div ref={viewportRef} className="p-4 md:p-6 space-y-4">
+          {messages.length === 0 && workflowEnabled && (
+            <div className="text-center text-muted-foreground">
+              <div className="mb-2">
+                <Bot className="h-8 w-8 mx-auto text-primary" />
+              </div>
+              <p className="text-sm">Hello! How can I help you today?</p>
+              <p className="text-xs mt-1">
+                Your messages will be processed through the saved workflow.
+              </p>
+            </div>
+          )}
           {messages.map((msg) => (
             <Message key={msg.id} message={msg} onActionSelect={(actionCardId, selectedValue) => {
                 sendMessage(`Selected "${selectedValue}" from card ID "${actionCardId}"`);

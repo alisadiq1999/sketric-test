@@ -2,9 +2,9 @@
 import { NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-const openai = new OpenAI({
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
-})
+}) : null
 
 export async function POST(request) {
   try {
@@ -16,6 +16,20 @@ export async function POST(request) {
         { error: 'Missing required parameter: input' },
         { status: 400 }
       )
+    }
+
+    // Use mock response if OpenAI API key is not available
+    if (!openai) {
+      const mockResponses = [
+        "I'm a demo assistant. Thanks for your message: " + input,
+        "Hello! I'm running in demo mode. Your input was: " + input,
+        "Demo response: I understand you said '" + input + "'. In a real setup, I'd use the OpenAI API to provide more helpful responses."
+      ]
+      const randomResponse = mockResponses[Math.floor(Math.random() * mockResponses.length)]
+      
+      return NextResponse.json({ 
+        output: randomResponse
+      })
     }
 
     // Kick off the Responses API call without streaming
